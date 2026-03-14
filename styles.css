@@ -222,25 +222,23 @@ html, body {
 #page-1 { background: var(--bg); align-items: center; justify-content: center; }
 .landing-bg { position: absolute; inset: 0; overflow: hidden; }
 .landing-rays {
-  position: absolute; inset: -50%; width: 200%; height: 200%;
-  background: conic-gradient(
-    from 0deg at 50% 50%,
-    rgba(232,71,42,0.045) 0deg,   transparent 16deg,
-    rgba(232,71,42,0.045) 32deg,  transparent 48deg,
-    rgba(232,71,42,0.045) 64deg,  transparent 80deg,
-    rgba(232,71,42,0.045) 96deg,  transparent 112deg,
-    rgba(232,71,42,0.045) 128deg, transparent 144deg,
-    rgba(232,71,42,0.045) 160deg, transparent 176deg,
-    rgba(232,71,42,0.045) 192deg, transparent 208deg,
-    rgba(232,71,42,0.045) 224deg, transparent 240deg,
-    rgba(232,71,42,0.045) 256deg, transparent 272deg,
-    rgba(232,71,42,0.045) 288deg, transparent 304deg,
-    rgba(232,71,42,0.045) 320deg, transparent 336deg,
-    rgba(232,71,42,0.045) 352deg, transparent 360deg
-  );
-  animation: rayRotate 80s linear infinite;
+  position: absolute; inset: -35%; width: 170%; height: 170%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(232,71,42,0.10) 0%, rgba(232,71,42,0.03) 36%, transparent 62%),
+    conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(232,71,42,0.10) 0deg,   rgba(232,71,42,0.02) 55deg,
+      rgba(232,71,42,0.08) 105deg, rgba(232,71,42,0.02) 165deg,
+      rgba(232,71,42,0.11) 225deg, rgba(232,71,42,0.02) 295deg,
+      rgba(232,71,42,0.09) 360deg
+    );
+  filter: blur(1px);
+  animation: rayDrift 44s ease-in-out infinite alternate;
 }
-@keyframes rayRotate { to { transform: rotate(360deg); } }
+@keyframes rayDrift {
+  from { transform: rotate(-8deg) scale(1); }
+  to { transform: rotate(8deg) scale(1.04); }
+}
 
 .landing-card {
   position: relative; z-index: 10;
@@ -277,19 +275,19 @@ html, body {
 #page-2 { background: var(--bg); }
 .gateway-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: 100%; }
 @media (max-width: 640px) { .gateway-grid { grid-template-columns: 1fr; } }
-.gateway-panel { display: flex; flex-direction: column; padding: 42px 36px; }
+.gateway-panel { display: flex; flex-direction: column; padding: clamp(32px, 4.5vw, 52px) clamp(24px, 4vw, 44px); }
 .create-panel { background: var(--bg-warm); border-right: 2px solid var(--border); }
 .join-panel { background: var(--bg); align-items: center; justify-content: center; gap: 18px; }
-.panel-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--ink); margin-bottom: 18px; }
+.panel-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 36px); font-weight: 700; color: var(--ink); margin-bottom: 18px; }
 .settings-card { background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--r); padding: 18px 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
 .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-.setting-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
-.setting-val { font-size: 13px; font-weight: 700; color: var(--ink); }
+.setting-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.setting-val { font-size: 14px; font-weight: 700; color: var(--ink); }
 .setting-val.gold { color: var(--green); }
 .code-display-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding: 14px 16px; background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--r-sm); }
 .code-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .room-code-display { font-family: 'VT323', monospace; font-size: 38px; color: var(--coral); letter-spacing: 0.12em; }
-.join-hint { font-size: 13px; color: var(--ink-3); text-align: center; max-width: 200px; line-height: 1.5; }
+.join-hint { font-size: 14px; color: var(--ink-3); text-align: center; max-width: 260px; line-height: 1.5; }
 
 /* ================================================================
    PAGE 3: WAITING ROOM
@@ -344,7 +342,7 @@ html, body {
 .balance-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); }
 .balance-amt { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--green); }
 
-.studio-body { display: flex; flex: 1; overflow: hidden; }
+.studio-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 .studio-panel { display: flex; flex-direction: column; align-items: center; background: var(--bg-warm); padding: 10px 8px; overflow-y: auto; flex-shrink: 0; width: 82px; }
 @media (max-width: 560px) { .studio-panel { width: 64px; } }
 .panel-section-label { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 5px; text-align: center; }
@@ -372,9 +370,10 @@ html, body {
   ADJUST padding to fit canvas inside your frame.png opening.
 */
 .ornate-frame {
-  background: transparent;
-  padding: 6px;
-  border-radius: 8px;
+  background-image: url('frame.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  padding: 58px 64px;
   position: relative; display: inline-flex;
   align-items: center; justify-content: center;
   width: min(100%, 1100px);
@@ -389,6 +388,87 @@ html, body {
 
 .studio-footer { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 14px; background: var(--bg-card); border-top: 2px solid var(--border); flex-shrink: 0; }
 .submit-status { font-size: 12px; color: var(--ink-3); text-align: center; }
+
+@media (max-width: 760px) {
+  .studio-header {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .studio-timer-wrap {
+    min-width: 70px;
+    padding: 4px 8px;
+  }
+  .studio-timer { font-size: 24px; }
+  .studio-prompt-pill {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+  .balance-amt { font-size: 16px; }
+
+  .studio-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+  .studio-left,
+  .studio-right {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid var(--border);
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .studio-right {
+    border-top: 2px solid var(--border);
+    border-bottom: none;
+  }
+  .panel-section-label { display: none; }
+  .color-palette {
+    display: flex;
+    flex-wrap: nowrap;
+    width: auto;
+    gap: 6px;
+  }
+  .color-swatch { width: 24px; height: 24px; }
+  .vertical-slider {
+    writing-mode: horizontal-tb;
+    direction: ltr;
+    width: 110px;
+    height: 4px;
+    margin: 0;
+  }
+  .brush-preview-wrap {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+  .brush-tools {
+    flex-direction: row;
+    width: max-content;
+  }
+  .brush-tool {
+    min-width: 60px;
+    padding: 6px 5px;
+  }
+  .studio-center {
+    justify-content: flex-start;
+    padding: 8px;
+    overflow: auto;
+  }
+  .ornate-frame {
+    padding: 36px 40px;
+    max-height: none;
+  }
+  .canvas-controls {
+    width: 100%;
+    padding-bottom: 6px;
+  }
+}
 
 /* ================================================================
    PAGE 6: AUCTION HALL
@@ -478,13 +558,16 @@ html, body {
 .results-rays {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
-    radial-gradient(circle at 50% 38%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.2) 22%, rgba(255,255,255,0) 58%),
-    repeating-conic-gradient(
-      from 0deg at 50% 38%,
-      rgba(232,71,42,0.085) 0deg 9deg,
-      rgba(255,255,255,0) 9deg 27deg
+    radial-gradient(circle at 50% 40%, rgba(232,71,42,0.12) 0%, rgba(232,71,42,0.03) 34%, transparent 65%),
+    conic-gradient(
+      from 0deg at 50% 42%,
+      rgba(232,71,42,0.09) 0deg,
+      rgba(232,71,42,0.02) 90deg,
+      rgba(232,71,42,0.08) 180deg,
+      rgba(232,71,42,0.02) 270deg,
+      rgba(232,71,42,0.09) 360deg
     );
-  filter: saturate(0.9);
+  animation: rayDrift 24s ease-in-out infinite alternate;
 }
 
 .results-header { position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -518,8 +601,7 @@ html, body {
 
 @media (max-width: 900px) {
   .ornate-frame {
-    padding: 6px;
-    width: 100%;
+    padding: 40px 45px;
   }
 }
 
@@ -599,7 +681,7 @@ html, body {
   }
 
   .ornate-frame {
-    padding: 4px;
+    padding: 34px 39px;
     max-height: none;
   }
 
