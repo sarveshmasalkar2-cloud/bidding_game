@@ -6,12 +6,12 @@
 // ================================================================
 // SECTION 1: CONFIG — REPLACE THESE WITH YOUR SUPABASE CREDENTIALS
 // ================================================================
-const SUPABASE_URL = 'https://xswgwxtqsuacohyvvqdl.supabase.co';       // e.g. https://xxxxx.supabase.co
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzd2d3eHRxc3VhY29oeXZ2cWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg3NTcsImV4cCI6MjA4OTA4NDc1N30.E6_nb6VKH73MDYHWqpdmUHXYF0_UIXRV5yF9FgpQQ5E'; // your project's anon key
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';       // e.g. https://xxxxx.supabase.co
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // your project's anon key
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
- 
+
 // ================================================================
 // SECTION 2: DRAWING PROMPTS
 // ================================================================
@@ -41,7 +41,7 @@ const PROMPTS = [
   "A very polite tornado",
   "An ant lifting a car",
 ];
- 
+
 // ================================================================
 // SECTION 3: COLOR PALETTE
 // ================================================================
@@ -59,7 +59,7 @@ const COLORS = [
   // Row 6: Earth & Dark
   '#8b4513', '#5c3317', '#1a1a2e', '#000000',
 ];
- 
+
 // ================================================================
 // SECTION 4: APP STATE
 // ================================================================
@@ -71,7 +71,7 @@ const state = {
   playerId:     null,
   isHost:       false,
   balance:      1000,
- 
+
   // Room settings
   settings: {
     maxPlayers:   4,
@@ -79,13 +79,13 @@ const state = {
     bidTime:      30,
     startBalance: 1000,
   },
- 
+
   // Game flow
   currentRoom:           null,  // Full room row from DB
   currentDrawings:       [],    // All drawings for this room
   currentAuctionDrawing: null,  // The drawing currently being auctioned
   auctionOrder:          [],    // Array of drawing IDs in auction order
- 
+
   // Drawing canvas
   canvasZoom:   1,
   currentColor: '#000000',
@@ -96,7 +96,7 @@ const state = {
   lastY:        0,
   historyStack: [],         // For undo
   MAX_HISTORY:  20,
- 
+
   // Timers (host-side)
   drawTimerInterval:  null,
   drawTimeLeft:       60,
@@ -104,9 +104,9 @@ const state = {
   bidTimeLeft:        30,
   promptCountdown:    null,
 };
- 
+
 let realtimeChannel = null;
- 
+
 // ================================================================
 // SECTION 5: PAGE NAVIGATION
 // ================================================================
@@ -122,7 +122,7 @@ function showPage(pageId) {
     requestAnimationFrame(() => target.classList.add('active'));
   }
 }
- 
+
 // ================================================================
 // SECTION 6: UTILITY HELPERS
 // ================================================================
@@ -134,7 +134,7 @@ function showLoading(text = 'Loading…') {
 function hideLoading() {
   document.getElementById('loading-overlay').classList.add('hidden');
 }
- 
+
 function showToast(msg, duration = 2800) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
@@ -146,20 +146,20 @@ function showToast(msg, duration = 2800) {
     setTimeout(() => toast.classList.add('hidden'), 300);
   }, duration);
 }
- 
+
 function formatMoney(n) {
   return '$' + Number(n).toLocaleString();
 }
- 
+
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // omit I and O (confusing)
   return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
- 
+
 function randomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
- 
+
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -168,19 +168,19 @@ function shuffleArray(arr) {
   }
   return a;
 }
- 
+
 // ================================================================
 // SECTION 7: PAGE 1 — LANDING
 // ================================================================
 const nicknameInput = document.getElementById('nickname-input');
 const btnEnter      = document.getElementById('btn-enter');
- 
+
 nicknameInput.addEventListener('input', () => {
   const val = nicknameInput.value.trim();
   btnEnter.disabled = val.length < 1 || val.length > 20;
   state.nickname = val;
 });
- 
+
 btnEnter.addEventListener('click', () => {
   if (!state.nickname) return;
   // Remember nickname across sessions
@@ -188,7 +188,7 @@ btnEnter.addEventListener('click', () => {
   generateAndShowCode();
   showPage('page-2');
 });
- 
+
 // ================================================================
 // SECTION 8: PAGE 2 — GATEWAY (Create / Join)
 // ================================================================
@@ -196,7 +196,7 @@ function generateAndShowCode() {
   state.roomCode = generateCode();
   document.getElementById('generated-code').textContent = state.roomCode;
 }
- 
+
 // Sliders
 document.getElementById('slider-players').addEventListener('input', e => {
   const v = parseInt(e.target.value);
@@ -218,7 +218,7 @@ document.getElementById('slider-money').addEventListener('input', e => {
   state.settings.startBalance = v;
   document.getElementById('val-money').textContent = formatMoney(v);
 });
- 
+
 // ── CREATE ROOM ──────────────────────────────────────────────────
 document.getElementById('btn-create').addEventListener('click', async () => {
   showLoading('Creating your room…');
@@ -239,10 +239,10 @@ document.getElementById('btn-create').addEventListener('click', async () => {
       })
       .select()
       .single();
- 
+
     if (roomErr) throw roomErr;
     state.roomId = room.id;
- 
+
     // Insert host as player
     const { data: player, error: playerErr } = await db
       .from('players')
@@ -254,12 +254,12 @@ document.getElementById('btn-create').addEventListener('click', async () => {
       })
       .select()
       .single();
- 
+
     if (playerErr) throw playerErr;
     state.playerId = player.id;
     state.isHost   = true;
     state.balance  = state.settings.startBalance;
- 
+
     hideLoading();
     initWaitingRoom();
   } catch (err) {
@@ -268,18 +268,18 @@ document.getElementById('btn-create').addEventListener('click', async () => {
     console.error(err);
   }
 });
- 
+
 // ── JOIN ROOM ────────────────────────────────────────────────────
 const joinInput = document.getElementById('join-input');
 const btnJoin   = document.getElementById('btn-join');
 const joinError = document.getElementById('join-error');
- 
+
 joinInput.addEventListener('input', e => {
   e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
   btnJoin.disabled = e.target.value.length !== 4;
   joinError.classList.add('hidden');
 });
- 
+
 btnJoin.addEventListener('click', async () => {
   const code = joinInput.value.trim().toUpperCase();
   showLoading('Joining room…');
@@ -290,20 +290,20 @@ btnJoin.addEventListener('click', async () => {
       .select('*')
       .eq('code', code)
       .single();
- 
+
     if (roomErr || !room) throw new Error('Room not found.');
     if (room.game_state !== 'lobby') throw new Error('Game already started.');
- 
+
     const maxP = room.settings?.maxPlayers || 4;
- 
+
     // Check player count
     const { count } = await db
       .from('players')
       .select('id', { count: 'exact', head: true })
       .eq('room_id', room.id);
- 
+
     if (count >= maxP) throw new Error('Room is full!');
- 
+
     // Check nickname isn't taken
     const { data: existing } = await db
       .from('players')
@@ -311,9 +311,9 @@ btnJoin.addEventListener('click', async () => {
       .eq('room_id', room.id)
       .eq('nickname', state.nickname)
       .maybeSingle();
- 
+
     if (existing) throw new Error('Nickname already taken in this room.');
- 
+
     // Join as player
     const { data: player, error: playerErr } = await db
       .from('players')
@@ -325,16 +325,16 @@ btnJoin.addEventListener('click', async () => {
       })
       .select()
       .single();
- 
+
     if (playerErr) throw playerErr;
- 
+
     state.roomId   = room.id;
     state.roomCode = room.code;
     state.playerId = player.id;
     state.isHost   = false;
     state.balance  = player.balance;
     Object.assign(state.settings, room.settings);
- 
+
     hideLoading();
     initWaitingRoom();
   } catch (err) {
@@ -344,7 +344,7 @@ btnJoin.addEventListener('click', async () => {
     console.error(err);
   }
 });
- 
+
 // ================================================================
 // SECTION 9: PAGE 3 — WAITING ROOM
 // ================================================================
@@ -352,20 +352,20 @@ async function initWaitingRoom() {
   showPage('page-3');
   document.getElementById('waiting-code').textContent = state.roomCode;
   document.getElementById('players-max').textContent  = state.settings.maxPlayers;
- 
+
   await refreshPlayerList();
   subscribeToRoom();
 }
- 
+
 async function refreshPlayerList() {
   const { data: players } = await db
     .from('players')
     .select('nickname, is_host')
     .eq('room_id', state.roomId)
     .order('created_at');
- 
+
   document.getElementById('players-joined').textContent = players?.length || 1;
- 
+
   const list = document.getElementById('player-list');
   list.innerHTML = '';
   players?.forEach(p => {
@@ -374,7 +374,7 @@ async function refreshPlayerList() {
     li.textContent = p.nickname;
     list.appendChild(li);
   });
- 
+
   // Show start button for host when enough players have joined
   const startBtn = document.getElementById('btn-host-start');
   if (state.isHost && players?.length >= state.settings.maxPlayers) {
@@ -384,11 +384,11 @@ async function refreshPlayerList() {
     startBtn.classList.add('hidden');
   }
 }
- 
+
 document.getElementById('btn-host-start').addEventListener('click', async () => {
   await hostStartGame();
 });
- 
+
 // ================================================================
 // SECTION 10: SUPABASE REALTIME SUBSCRIPTIONS
 // ================================================================
@@ -396,10 +396,10 @@ function subscribeToRoom() {
   if (realtimeChannel) {
     db.removeChannel(realtimeChannel);
   }
- 
+
   realtimeChannel = db
     .channel('room-' + state.roomId)
- 
+
     // Watch for room state changes
     .on('postgres_changes', {
       event: 'UPDATE',
@@ -409,7 +409,7 @@ function subscribeToRoom() {
     }, (payload) => {
       handleRoomUpdate(payload.new);
     })
- 
+
     // Watch for new players joining
     .on('postgres_changes', {
       event: 'INSERT',
@@ -419,7 +419,7 @@ function subscribeToRoom() {
     }, () => {
       refreshPlayerList();
     })
- 
+
     // Watch for new drawings submitted
     .on('postgres_changes', {
       event: 'INSERT',
@@ -429,7 +429,7 @@ function subscribeToRoom() {
     }, (payload) => {
       handleDrawingSubmitted(payload.new);
     })
- 
+
     // Watch for bids (host uses this to know when all players have bid)
     .on('postgres_changes', {
       event: 'INSERT',
@@ -439,47 +439,47 @@ function subscribeToRoom() {
     }, (payload) => {
       handleBidReceived(payload.new);
     })
- 
+
     .subscribe((status) => {
       console.log('Realtime status:', status);
     });
 }
- 
+
 // ================================================================
 // SECTION 11: ROOM STATE MACHINE — Handle server-side state changes
 // ================================================================
 async function handleRoomUpdate(room) {
   state.currentRoom = room;
- 
+
   // Sync settings from room
   if (room.settings) {
     Object.assign(state.settings, room.settings);
   }
- 
+
   console.log('Room state →', room.game_state, '| auction phase →', room.auction_phase);
- 
+
   // ── LOBBY ────────────────────────────────────────────────────
   if (room.game_state === 'lobby') {
     refreshPlayerList();
     return;
   }
- 
+
   // ── PROMPT ───────────────────────────────────────────────────
   if (room.game_state === 'prompt') {
     transitionToPrompt(room.current_prompt);
     return;
   }
- 
+
   // ── DRAWING ──────────────────────────────────────────────────
   if (room.game_state === 'drawing') {
     transitionToStudio(room.current_prompt);
     return;
   }
- 
+
   // ── AUCTION ──────────────────────────────────────────────────
   if (room.game_state === 'auction') {
     state.auctionOrder = room.drawing_order || [];
- 
+
     if (room.auction_phase === 'reveal') {
       await transitionToAuctionReveal(room.current_auction_index);
     } else if (room.auction_phase === 'bidding') {
@@ -490,18 +490,18 @@ async function handleRoomUpdate(room) {
     }
     return;
   }
- 
+
   // ── RESULTS ──────────────────────────────────────────────────
   if (room.game_state === 'results') {
     transitionToResults();
     return;
   }
 }
- 
+
 // ================================================================
 // SECTION 12: HOST GAME CONTROLS
 // ================================================================
- 
+
 // ── STEP 1: HOST STARTS GAME → assign unique prompt per player, push 'prompt' state ──
 async function hostStartGame() {
   // Fetch all players in the room
@@ -509,16 +509,16 @@ async function hostStartGame() {
     .from('players')
     .select('id, nickname')
     .eq('room_id', state.roomId);
- 
+
   if (!players?.length) { showToast('No players found!'); return; }
- 
+
   // Shuffle prompts pool and assign one unique prompt to each player
   const shuffled = shuffleArray([...PROMPTS]);
   const promptMap = {}; // { nickname: prompt }
   players.forEach((p, i) => {
     promptMap[p.nickname] = shuffled[i % shuffled.length];
   });
- 
+
   const { error } = await db
     .from('rooms')
     .update({
@@ -527,20 +527,20 @@ async function hostStartGame() {
       current_prompt:   JSON.stringify(promptMap),
     })
     .eq('id', state.roomId);
- 
+
   if (error) { showToast('Error starting game.'); console.error(error); }
 }
- 
+
 // ── STEP 2: HOST STARTS DRAWING PHASE after prompt countdown ─────
 async function hostStartDrawing() {
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'drawing' })
     .eq('id', state.roomId);
- 
+
   if (error) console.error(error);
 }
- 
+
 // ── STEP 3: HOST STARTS AUCTION after drawings are in ─────────────
 async function hostStartAuction() {
   // Fetch all drawings for this room
@@ -548,15 +548,15 @@ async function hostStartAuction() {
     .from('drawings')
     .select('id')
     .eq('room_id', state.roomId);
- 
+
   if (error || !drawings?.length) {
     showToast('No drawings found!');
     return;
   }
- 
+
   // Shuffle order
   const order = shuffleArray(drawings.map(d => d.id));
- 
+
   const { error: updateErr } = await db
     .from('rooms')
     .update({
@@ -566,21 +566,21 @@ async function hostStartAuction() {
       auction_phase:         'reveal',
     })
     .eq('id', state.roomId);
- 
+
   if (updateErr) console.error(updateErr);
 }
- 
+
 // ── STEP 4: HOST ADVANCES to next auction lot ─────────────────────
 async function hostNextLot() {
   const room = state.currentRoom;
   const nextIndex = (room.current_auction_index || 0) + 1;
- 
+
   if (nextIndex >= (room.drawing_order?.length || 0)) {
     // All lots done → results
     await hostEndGame();
     return;
   }
- 
+
   const { error } = await db
     .from('rooms')
     .update({
@@ -588,20 +588,20 @@ async function hostNextLot() {
       auction_phase:         'reveal',
     })
     .eq('id', state.roomId);
- 
+
   if (error) console.error(error);
 }
- 
+
 // ── STEP 5: HOST ENDS GAME → results ─────────────────────────────
 async function hostEndGame() {
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'results' })
     .eq('id', state.roomId);
- 
+
   if (error) console.error(error);
 }
- 
+
 // ── HOST: resolve bids for current lot, then advance ──────────────
 async function hostResolveBids(drawingId) {
   try {
@@ -610,17 +610,17 @@ async function hostResolveBids(drawingId) {
       .select('*')
       .eq('drawing_id', drawingId)
       .order('amount', { ascending: false });
- 
+
     if (bidsErr) throw bidsErr;
- 
+
     let winnerNickname = null;
     let winningBid     = 0;
- 
+
     if (bids && bids.length > 0) {
       const top      = bids[0];
       winnerNickname = top.player_nickname;
       winningBid     = top.amount;
- 
+
       // Fetch winner's current balance
       const { data: winnerPlayer } = await db
         .from('players')
@@ -628,7 +628,7 @@ async function hostResolveBids(drawingId) {
         .eq('room_id', state.roomId)
         .eq('nickname', winnerNickname)
         .single();
- 
+
       if (winnerPlayer) {
         const newBalance     = Math.max(0, winnerPlayer.balance - winningBid);
         const newPaintingIds = [...(winnerPlayer.won_painting_ids || []), drawingId];
@@ -638,32 +638,32 @@ async function hostResolveBids(drawingId) {
           .eq('id', winnerPlayer.id);
       }
     }
- 
+
     // Update drawing record with winner
     await db
       .from('drawings')
       .update({ winner_nickname: winnerNickname, winning_bid: winningBid })
       .eq('id', drawingId);
- 
+
     // No winner overlay — go straight to next lot
     bidsThisRound = 0;
     await hostNextLot();
- 
+
   } catch (err) {
     console.error('Error resolving bids:', err);
   }
 }
- 
+
 // ================================================================
 // SECTION 13: PAGE 4 — PROMPT REVEAL
 // ================================================================
 function transitionToPrompt(promptData) {
   if (!promptData) return;
- 
+
   // Only show prompt page if we're not already drawing
   const currentPage = document.querySelector('.page.active')?.id;
   if (currentPage === 'page-5') return;
- 
+
   // promptData is a JSON string mapping nickname → prompt
   let myPrompt = promptData;
   try {
@@ -675,16 +675,16 @@ function transitionToPrompt(promptData) {
     // Plain string fallback
     myPrompt = promptData;
   }
- 
+
   // Store for later use in studio
   state.myPrompt = myPrompt;
- 
+
   showPage('page-4');
   document.getElementById('prompt-text').textContent = myPrompt;
- 
+
   let count = 5;
   document.getElementById('prompt-countdown').textContent = count;
- 
+
   clearInterval(state.promptCountdown);
   state.promptCountdown = setInterval(() => {
     count--;
@@ -697,34 +697,34 @@ function transitionToPrompt(promptData) {
     }
   }, 1000);
 }
- 
+
 // ================================================================
 // SECTION 14: PAGE 5 — STUDIO / DRAWING CANVAS
 // ================================================================
 let canvas, ctx;
 let isMouseDown = false;
- 
+
 function transitionToStudio(promptData) {
   showPage('page-5');
   // Use the already-resolved per-player prompt if available
   const prompt = state.myPrompt || promptData || 'Draw something!';
   document.getElementById('studio-prompt-display').textContent = prompt;
   document.getElementById('studio-balance').textContent = formatMoney(state.balance);
- 
+
   initCanvas();
   buildColorPalette();
   startDrawTimer();
- 
+
   // Enable submit button immediately (they can submit early)
   document.getElementById('btn-submit-drawing').disabled = false;
   document.getElementById('submit-status').textContent = '';
 }
- 
+
 // ── Canvas Init ───────────────────────────────────────────────────
 function initCanvas() {
   canvas = document.getElementById('drawing-canvas');
   ctx    = canvas.getContext('2d');
- 
+
   // Compute canvas size from its container
   const frame    = canvas.closest('.ornate-frame');
   const maxW     = frame.clientWidth  - 108; // account for frame.png padding (54px each side)
@@ -732,20 +732,20 @@ function initCanvas() {
   // Fall back to sensible defaults if the frame isn't sized yet
   const cw = Math.max(300, Math.min(maxW || 500, 600));
   const ch = Math.round(cw * 0.75); // 4:3 ratio
- 
+
   canvas.width  = cw;
   canvas.height = ch;
   canvas.style.width  = cw + 'px';
   canvas.style.height = ch + 'px';
- 
+
   // White background
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, cw, ch);
- 
+
   saveHistory();
   setupCanvasEvents();
 }
- 
+
 // ── Canvas History (Undo) ─────────────────────────────────────────
 function saveHistory() {
   if (state.historyStack.length >= state.MAX_HISTORY) {
@@ -753,7 +753,7 @@ function saveHistory() {
   }
   state.historyStack.push(canvas.toDataURL());
 }
- 
+
 document.getElementById('btn-undo').addEventListener('click', () => {
   if (state.historyStack.length <= 1) return;
   state.historyStack.pop(); // remove current
@@ -762,13 +762,13 @@ document.getElementById('btn-undo').addEventListener('click', () => {
   img.onload = () => { ctx.drawImage(img, 0, 0); };
   img.src    = prev;
 });
- 
+
 document.getElementById('btn-clear').addEventListener('click', () => {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   saveHistory();
 });
- 
+
 // ── Zoom ──────────────────────────────────────────────────────────
 document.getElementById('btn-zoom-in').addEventListener('click', () => {
   state.canvasZoom = Math.min(state.canvasZoom + 0.25, 3);
@@ -785,7 +785,7 @@ function applyZoom() {
     canvas.style.transformOrigin = 'top left';
   }
 }
- 
+
 // ── Color Palette ─────────────────────────────────────────────────
 function buildColorPalette() {
   const palette = document.getElementById('color-palette');
@@ -806,7 +806,7 @@ function buildColorPalette() {
     palette.appendChild(swatch);
   });
 }
- 
+
 // ── Brush Tool Buttons ────────────────────────────────────────────
 document.querySelectorAll('.brush-tool').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -819,7 +819,7 @@ document.querySelectorAll('.brush-tool').forEach(btn => {
     else                                       canvas && (canvas.style.cursor = 'crosshair');
   });
 });
- 
+
 // ── Brush Size Slider ─────────────────────────────────────────────
 document.getElementById('brush-size-slider').addEventListener('input', e => {
   state.brushSize = parseInt(e.target.value);
@@ -834,7 +834,7 @@ function updateBrushPreview() {
   preview.style.background = isEraser ? '#ffffff' : state.currentColor;
   preview.style.border = isEraser ? '1px solid #aaa' : 'none';
 }
- 
+
 // ── Canvas Mouse + Touch Events ───────────────────────────────────
 function setupCanvasEvents() {
   // Mouse
@@ -842,14 +842,14 @@ function setupCanvasEvents() {
   canvas.addEventListener('mousemove',  onPointerMove);
   canvas.addEventListener('mouseup',    onPointerUp);
   canvas.addEventListener('mouseleave', onPointerUp);
- 
+
   // Touch
   canvas.addEventListener('touchstart',  e => { e.preventDefault(); onPointerDown(touchToMouse(e)); }, { passive: false });
   canvas.addEventListener('touchmove',   e => { e.preventDefault(); onPointerMove(touchToMouse(e)); }, { passive: false });
   canvas.addEventListener('touchend',    e => { e.preventDefault(); onPointerUp(); });
   canvas.addEventListener('touchcancel', e => { e.preventDefault(); onPointerUp(); });
 }
- 
+
 function touchToMouse(e) {
   const touch  = e.touches[0];
   const rect   = canvas.getBoundingClientRect();
@@ -860,7 +860,7 @@ function touchToMouse(e) {
     offsetY: (touch.clientY - rect.top)  / state.canvasZoom * scaleY,
   };
 }
- 
+
 function getCanvasXY(e) {
   const rect   = canvas.getBoundingClientRect();
   const scaleX = canvas.width  / (rect.width  / state.canvasZoom);
@@ -870,7 +870,7 @@ function getCanvasXY(e) {
     y: (e.offsetY !== undefined ? e.offsetY : e.clientY - rect.top)  / state.canvasZoom * scaleY,
   };
 }
- 
+
 // ── Line Eraser State ─────────────────────────────────────────────
 // Stores the pixel positions the eraser crossed during a drag gesture.
 // On pointer-up we scan each history snapshot to find which strokes
@@ -878,25 +878,25 @@ function getCanvasXY(e) {
 // Simpler & more reliable: we just erase the thick region under the
 // eraser path by painting white along it with a wide brush.
 let lineEraserPath = [];
- 
+
 function onPointerDown(e) {
   isMouseDown = true;
   const { x, y } = getCanvasXY(e);
   state.lastX = x;
   state.lastY = y;
- 
+
   if (state.currentTool === 'bucket') {
     floodFill(Math.round(x), Math.round(y), state.currentColor);
     saveHistory();
     return;
   }
- 
+
   if (state.currentTool === 'eraser-line') {
     // Start collecting the eraser path
     lineEraserPath = [{ x, y }];
     return;
   }
- 
+
   // Normal drawing start
   ctx.beginPath();
   applyBrushSettings();
@@ -904,13 +904,13 @@ function onPointerDown(e) {
   ctx.lineTo(x + 0.1, y + 0.1);
   ctx.stroke();
 }
- 
+
 function onPointerMove(e) {
   if (!isMouseDown) return;
   const { x, y } = getCanvasXY(e);
- 
+
   if (state.currentTool === 'bucket') return;
- 
+
   if (state.currentTool === 'eraser-line') {
     lineEraserPath.push({ x, y });
     // Draw a faint red highlight so the user can see what they're erasing
@@ -928,7 +928,7 @@ function onPointerMove(e) {
     state.lastY = y;
     return;
   }
- 
+
   if (state.currentTool === 'eraser-pixel') {
     ctx.beginPath();
     applyBrushSettings();
@@ -939,31 +939,31 @@ function onPointerMove(e) {
     state.lastY = y;
     return;
   }
- 
+
   // Normal brush
   ctx.beginPath();
   applyBrushSettings();
   ctx.moveTo(state.lastX, state.lastY);
   ctx.lineTo(x, y);
   ctx.stroke();
- 
+
   state.lastX = x;
   state.lastY = y;
 }
- 
+
 function onPointerUp() {
   if (!isMouseDown) return;
   isMouseDown = false;
- 
+
   if (state.currentTool === 'eraser-line' && lineEraserPath.length > 1) {
     applyLineEraser();
     lineEraserPath = [];
     return;
   }
- 
+
   saveHistory();
 }
- 
+
 // ── Line Eraser: erase entire strokes that were crossed ────────────
 // Strategy: walk backward through history snapshots.
 // For each snapshot, check if ANY pixel under our eraser path changed
@@ -983,7 +983,7 @@ function applyLineEraser() {
   ctx.lineCap     = 'round';
   ctx.lineJoin    = 'round';
   ctx.shadowBlur  = 0;
- 
+
   ctx.beginPath();
   ctx.moveTo(lineEraserPath[0].x, lineEraserPath[0].y);
   for (let i = 1; i < lineEraserPath.length; i++) {
@@ -991,16 +991,16 @@ function applyLineEraser() {
   }
   ctx.stroke();
   ctx.restore();
- 
+
   saveHistory();
 }
- 
+
 function applyBrushSettings() {
   let size  = state.brushSize;
   let color = state.currentColor;
   let cap   = 'round';
   let blur  = 0;
- 
+
   switch (state.currentTool) {
     case 'brush':
       // Normal brush — smooth, slightly soft
@@ -1019,7 +1019,7 @@ function applyBrushSettings() {
       break;
     // bucket handled separately, no brush settings needed
   }
- 
+
   ctx.strokeStyle  = color;
   ctx.lineWidth    = size;
   ctx.lineCap      = cap;
@@ -1028,50 +1028,50 @@ function applyBrushSettings() {
   ctx.shadowColor  = blur > 0 ? color : 'transparent';
   ctx.globalAlpha  = 1;
 }
- 
+
 // ── Flood Fill (Bucket Tool) ──────────────────────────────────────
 function floodFill(startX, startY, fillHex) {
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data    = imgData.data;
   const w       = canvas.width;
   const h       = canvas.height;
- 
+
   // Get target color at click position
   const idx     = (startY * w + startX) * 4;
   const tr = data[idx], tg = data[idx+1], tb = data[idx+2], ta = data[idx+3];
- 
+
   // Parse fill color
   const fillRGB  = hexToRGB(fillHex);
   const fr = fillRGB[0], fg = fillRGB[1], fb = fillRGB[2];
- 
+
   // Don't fill if already the same color
   if (tr === fr && tg === fg && tb === fb) return;
- 
+
   const tolerance = 30; // how similar colors need to be to get filled
- 
+
   function colorMatch(i) {
     return Math.abs(data[i]   - tr) <= tolerance &&
            Math.abs(data[i+1] - tg) <= tolerance &&
            Math.abs(data[i+2] - tb) <= tolerance &&
            Math.abs(data[i+3] - ta) <= tolerance;
   }
- 
+
   // BFS fill
   const queue   = [[startX, startY]];
   const visited = new Uint8Array(w * h);
   visited[startY * w + startX] = 1;
- 
+
   while (queue.length > 0) {
     const [cx, cy] = queue.pop();
     const i = (cy * w + cx) * 4;
- 
+
     if (!colorMatch(i)) continue;
- 
+
     data[i]   = fr;
     data[i+1] = fg;
     data[i+2] = fb;
     data[i+3] = 255;
- 
+
     const neighbors = [
       [cx-1, cy], [cx+1, cy],
       [cx, cy-1], [cx, cy+1],
@@ -1086,31 +1086,31 @@ function floodFill(startX, startY, fillHex) {
       }
     }
   }
- 
+
   ctx.putImageData(imgData, 0, 0);
 }
- 
+
 function hexToRGB(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? [parseInt(result[1],16), parseInt(result[2],16), parseInt(result[3],16)]
     : [0, 0, 0];
 }
- 
+
 // ── Draw Timer (Host Runs It) ─────────────────────────────────────
 function startDrawTimer() {
   state.drawTimeLeft = state.settings.drawTime;
   const timerEl = document.getElementById('draw-timer');
   timerEl.textContent  = state.drawTimeLeft;
   timerEl.classList.remove('urgent');
- 
+
   clearInterval(state.drawTimerInterval);
   state.drawTimerInterval = setInterval(() => {
     state.drawTimeLeft--;
     timerEl.textContent = state.drawTimeLeft;
- 
+
     if (state.drawTimeLeft <= 10) timerEl.classList.add('urgent');
- 
+
     if (state.drawTimeLeft <= 0) {
       clearInterval(state.drawTimerInterval);
       timerEl.textContent = '0';
@@ -1122,23 +1122,23 @@ function startDrawTimer() {
     }
   }, 1000);
 }
- 
+
 // ── Submit Drawing ────────────────────────────────────────────────
 document.getElementById('btn-submit-drawing').addEventListener('click', submitDrawing);
- 
+
 let drawingSubmitted = false;
- 
+
 async function submitDrawing() {
   if (drawingSubmitted) return;
   drawingSubmitted = true;
- 
+
   clearInterval(state.drawTimerInterval);
- 
+
   const submitBtn = document.getElementById('btn-submit-drawing');
   const statusEl  = document.getElementById('submit-status');
   submitBtn.disabled  = true;
   statusEl.textContent = 'Compressing your masterpiece…';
- 
+
   // Compress canvas to JPEG base64
   // Resize to max 480px wide for smaller payload
   const compCanvas  = document.createElement('canvas');
@@ -1149,10 +1149,10 @@ async function submitDrawing() {
   const compCtx     = compCanvas.getContext('2d');
   compCtx.drawImage(canvas, 0, 0, compCanvas.width, compCanvas.height);
   const imageData   = compCanvas.toDataURL('image/jpeg', 0.5); // 50% JPEG quality
- 
+
   try {
     const prompt = document.getElementById('studio-prompt-display').textContent;
- 
+
     const { error } = await db.from('drawings').insert({
       room_id:         state.roomId,
       player_id:       state.playerId,
@@ -1161,17 +1161,17 @@ async function submitDrawing() {
       prompt:          prompt,
       // secret_value is assigned automatically by Postgres DEFAULT
     });
- 
+
     if (error) throw error;
- 
+
     statusEl.textContent = '✅ Masterpiece submitted! Waiting for others…';
     drawingSubmitted = true;
- 
+
     // Host: once submitted, check if everyone is in; if so, start auction
     if (state.isHost) {
       setTimeout(checkAllDrawingsIn, 1500);
     }
- 
+
   } catch (err) {
     submitBtn.disabled   = false;
     drawingSubmitted     = false;
@@ -1179,19 +1179,19 @@ async function submitDrawing() {
     console.error(err);
   }
 }
- 
+
 // Host checks if all players have submitted drawings
 async function checkAllDrawingsIn() {
   const { count: playerCount } = await db
     .from('players')
     .select('id', { count: 'exact', head: true })
     .eq('room_id', state.roomId);
- 
+
   const { count: drawingCount } = await db
     .from('drawings')
     .select('id', { count: 'exact', head: true })
     .eq('room_id', state.roomId);
- 
+
   if (drawingCount >= playerCount) {
     await hostStartAuction();
   } else {
@@ -1199,107 +1199,97 @@ async function checkAllDrawingsIn() {
     setTimeout(checkAllDrawingsIn, 3000);
   }
 }
- 
+
 function handleDrawingSubmitted(drawing) {
   console.log('Drawing submitted by:', drawing.player_nickname);
   showToast(drawing.player_nickname + ' submitted their painting!');
 }
- 
+
 // ================================================================
 // SECTION 15: PAGE 6 — AUCTION HALL
 // ================================================================
- 
+
 // ── Transition to Auction → Reveal Phase ──────────────────────────
 async function transitionToAuctionReveal(auctionIndex) {
   showPage('page-6');
- 
+
   // Reset bidding UI
   document.getElementById('bid-controls').style.display = 'flex';
   document.getElementById('bid-locked-msg').classList.add('hidden');
   document.getElementById('bid-amount-input').value = '';
   document.getElementById('bid-amount-input').disabled = false;
   document.getElementById('btn-lock-bid').disabled = false;
-  document.getElementById('winner-overlay').classList.add('hidden');
- 
-  // Close curtains first
+
+  // Curtains closed while image loads
   const curtainL = document.getElementById('curtain-left');
   const curtainR = document.getElementById('curtain-right');
   curtainL.classList.remove('open');
   curtainR.classList.remove('open');
- 
+
   // Update lot counter
   const totalLots = state.auctionOrder.length;
   document.getElementById('auction-round-display').textContent =
     `${auctionIndex + 1} / ${totalLots}`;
- 
+
   // Update balance
   document.getElementById('auction-balance').textContent = formatMoney(state.balance);
- 
+
   // Fetch the drawing for this lot
   const drawingId = state.auctionOrder[auctionIndex];
   if (!drawingId) return;
- 
+
   const { data: drawing, error } = await db
     .from('drawings')
     .select('*')
     .eq('id', drawingId)
     .single();
- 
+
   if (error || !drawing) { console.error('Drawing not found', error); return; }
- 
+
   state.currentAuctionDrawing = drawing;
- 
-  // Load the painting image (hidden behind curtains)
+
+  // Load painting — artist stays anonymous until results
   document.getElementById('auction-painting').src = drawing.image_data;
-  document.getElementById('winner-painting-img').src = drawing.image_data;
- 
-  // Artist is anonymous during bidding
   document.getElementById('artist-name').textContent = 'Mystery Artist';
- 
-  // Open curtains instantly (no animation as requested)
-  const curtainL = document.getElementById('curtain-left');
-  const curtainR = document.getElementById('curtain-right');
-  curtainL.classList.remove('open');
-  curtainR.classList.remove('open');
- 
-  // Small pause so the image loads, then reveal instantly
+
+  // Open curtains instantly after short image-load pause
   setTimeout(() => {
     curtainL.classList.add('open');
     curtainR.classList.add('open');
- 
-    // Host immediately pushes 'bidding' phase
+
+    // Host pushes bidding phase
     if (state.isHost) {
       db.from('rooms')
         .update({ auction_phase: 'bidding' })
         .eq('id', state.roomId)
         .then(() => {});
     }
-  }, 400); // just enough for image src to load
+  }, 400);
 }
- 
+
 // ── Bidding Phase ─────────────────────────────────────────────────
 function startBiddingPhase() {
   const bidTimeLeft_init = state.settings.bidTime || 30;
   let bidTimeLeft = bidTimeLeft_init;
- 
+
   const bidTimerEl = document.getElementById('bid-timer');
   bidTimerEl.textContent = bidTimeLeft;
   bidTimerEl.classList.remove('urgent');
- 
+
   // Balance display
   document.getElementById('auction-balance').textContent = formatMoney(state.balance);
- 
+
   clearInterval(state.bidTimerInterval);
   state.bidTimerInterval = setInterval(async () => {
     bidTimeLeft--;
     bidTimerEl.textContent = bidTimeLeft;
- 
+
     if (bidTimeLeft <= 10) bidTimerEl.classList.add('urgent');
- 
+
     if (bidTimeLeft <= 0) {
       clearInterval(state.bidTimerInterval);
       bidTimerEl.textContent = '0';
- 
+
       // Host resolves bids
       if (state.isHost && state.currentAuctionDrawing) {
         await hostResolveBids(state.currentAuctionDrawing.id);
@@ -1307,14 +1297,14 @@ function startBiddingPhase() {
     }
   }, 1000);
 }
- 
+
 // Bid counter: host tracks how many bids have come in
 let bidsThisRound = 0;
- 
+
 function handleBidReceived(bid) {
   bidsThisRound++;
   console.log('Bid received from:', bid.player_nickname);
- 
+
   if (state.isHost) {
     // If all players have bid, resolve early
     db.from('players')
@@ -1328,21 +1318,21 @@ function handleBidReceived(bid) {
       });
   }
 }
- 
+
 // ── Lock Bid Button ───────────────────────────────────────────────
 document.getElementById('btn-lock-bid').addEventListener('click', async () => {
   const amountRaw = document.getElementById('bid-amount-input').value;
   const amount    = parseInt(amountRaw) || 0;
- 
+
   if (amount < 0) { showToast('Bid must be $0 or more.'); return; }
   if (amount > state.balance) { showToast("You can't bid more than your balance!"); return; }
- 
+
   const drawing = state.currentAuctionDrawing;
   if (!drawing) return;
- 
+
   document.getElementById('btn-lock-bid').disabled = true;
   document.getElementById('bid-amount-input').disabled = true;
- 
+
   try {
     const { error } = await db.from('bids').upsert({
       room_id:         state.roomId,
@@ -1351,9 +1341,9 @@ document.getElementById('btn-lock-bid').addEventListener('click', async () => {
       player_nickname: state.nickname,
       amount:          amount,
     }, { onConflict: 'drawing_id,player_id' });
- 
+
     if (error) throw error;
- 
+
     document.getElementById('bid-controls').style.display = 'none';
     document.getElementById('bid-locked-msg').classList.remove('hidden');
   } catch (err) {
@@ -1363,35 +1353,35 @@ document.getElementById('btn-lock-bid').addEventListener('click', async () => {
     console.error(err);
   }
 });
- 
+
 // (winner overlay removed — results screen shows all paintings at end)
- 
+
 // ================================================================
 // SECTION 16: PAGE 7 — RESULTS
 // ================================================================
 async function transitionToResults() {
   showPage('page-7');
- 
+
   const { data: players } = await db
     .from('players')
     .select('*')
     .eq('room_id', state.roomId);
- 
+
   const { data: drawings } = await db
     .from('drawings')
     .select('*')
     .eq('room_id', state.roomId);
- 
+
   if (!players || !drawings) return;
- 
+
   // Map drawing id → drawing row
   const drawingMap = {};
   drawings.forEach(d => { drawingMap[d.id] = d; });
- 
+
   // Map player nickname → their drawn painting (they created it)
   const drawnByPlayer = {};
   drawings.forEach(d => { drawnByPlayer[d.player_nickname] = d; });
- 
+
   // Calculate scores
   const scores = players.map(p => {
     const wonIds       = p.won_painting_ids || [];
@@ -1400,18 +1390,18 @@ async function transitionToResults() {
     const wonDrawings  = wonIds.map(id => drawingMap[id]).filter(Boolean);
     return { ...p, paintingVal, total, wonDrawings };
   }).sort((a, b) => b.total - a.total);
- 
+
   const lb = document.getElementById('leaderboard');
   lb.innerHTML = '';
- 
+
   scores.forEach((s, i) => {
     const medals  = ['🥇', '🥈', '🥉'];
     const rankTxt = medals[i] || `#${i + 1}`;
     const isMe    = s.nickname === state.nickname;
- 
+
     // Their own drawn painting (what they created)
     const theirPainting = drawnByPlayer[s.nickname];
- 
+
     // Paintings they WON at auction
     const wonImgHTML = s.wonDrawings.map(d => `
       <div class="lb-painting-frame" title="Painted by ${d.player_nickname} — True value: ${formatMoney(d.secret_value)}">
@@ -1419,12 +1409,12 @@ async function transitionToResults() {
         <div class="lb-painting-label">by ${d.player_nickname}</div>
       </div>
     `).join('');
- 
+
     const li = document.createElement('li');
     li.style.animationDelay = (i * 0.12) + 's';
     li.innerHTML = `
       <span class="lb-rank ${i === 0 ? 'top-rank' : ''}">${rankTxt}</span>
- 
+
       <div class="lb-info">
         <div class="lb-name">
           ${s.nickname}
@@ -1435,7 +1425,7 @@ async function transitionToResults() {
         </div>
         ${s.wonDrawings.length > 0 ? `<div class="lb-won-paintings">${wonImgHTML}</div>` : '<div class="lb-no-wins">No paintings won</div>'}
       </div>
- 
+
       ${theirPainting ? `
         <div class="lb-their-art" title="What ${s.nickname} drew: ${theirPainting.prompt}">
           <div class="lb-painting-frame">
@@ -1444,13 +1434,13 @@ async function transitionToResults() {
           <div class="lb-art-caption">They drew</div>
         </div>
       ` : ''}
- 
+
       <span class="lb-score">${formatMoney(s.total)}</span>
     `;
     lb.appendChild(li);
   });
 }
- 
+
 // ================================================================
 // SECTION 17: HELP MODAL
 // ================================================================
@@ -1463,7 +1453,7 @@ document.getElementById('help-close').addEventListener('click', () => {
 document.getElementById('help-close-btn').addEventListener('click', () => {
   document.getElementById('help-modal').classList.add('hidden');
 });
- 
+
 // ================================================================
 // SECTION 18: ROOM CLEANUP
 // Call this when the host leaves / game ends to delete all data.
@@ -1478,7 +1468,7 @@ async function destroyRoom() {
     console.error('Cleanup error:', err);
   }
 }
- 
+
 // Auto-cleanup when host closes/refreshes the tab
 window.addEventListener('beforeunload', () => {
   if (state.isHost && state.roomId) {
@@ -1488,13 +1478,13 @@ window.addEventListener('beforeunload', () => {
     destroyRoom();
   }
 });
- 
+
 // ================================================================
 // SECTION 19: INIT
 // ================================================================
 (function init() {
   showPage('page-1');
- 
+
   // Restore last used nickname from localStorage
   try {
     const saved = localStorage.getItem('mm_nickname');
@@ -1504,8 +1494,7 @@ window.addEventListener('beforeunload', () => {
       btnEnter.disabled    = false;
     }
   } catch(e) {}
- 
+
   updateBrushPreview();
   console.log('🎨 Masterpiece Market ready.');
 })();
- 
