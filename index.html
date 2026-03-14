@@ -193,25 +193,23 @@
       <aside class="studio-panel studio-right">
         <p class="panel-section-label">Brushes</p>
         <div class="brush-tools">
-          <button class="brush-tool active" data-tool="pencil" title="Fine Pencil">
-            <span class="brush-icon">✏️</span>
-            <span>Fine</span>
-          </button>
-          <button class="brush-tool" data-tool="brush" title="Normal Brush">
+          <button class="brush-tool active" data-tool="brush" title="Normal Brush">
             <span class="brush-icon">🖌️</span>
-            <span>Normal</span>
-          </button>
-          <button class="brush-tool" data-tool="broad" title="Broad Brush">
-            <span class="brush-icon">🖼️</span>
-            <span>Broad</span>
+            <span>Brush</span>
           </button>
           <button class="brush-tool" data-tool="bucket" title="Paint Bucket Fill">
             <span class="brush-icon">🪣</span>
             <span>Bucket</span>
           </button>
-          <button class="brush-tool" data-tool="eraser" title="Eraser">
+          <!-- Pixel eraser: rubs out individual pixels under cursor -->
+          <button class="brush-tool" data-tool="eraser-pixel" title="Pixel Eraser">
+            <span class="brush-icon">🔸</span>
+            <span>Pixel</span>
+          </button>
+          <!-- Line/shape eraser: like Notability — drag across a stroke to delete the whole line -->
+          <button class="brush-tool" data-tool="eraser-line" title="Line Eraser — drag across a line to delete it">
             <span class="brush-icon">🧹</span>
-            <span>Eraser</span>
+            <span>Line</span>
           </button>
         </div>
       </aside>
@@ -301,52 +299,27 @@
       <p id="bid-locked-msg" class="bid-locked-msg hidden">✅ Bid locked in!</p>
     </footer>
 
-    <!-- Winner Reveal Overlay (shown after bidding, before next lot) -->
-    <div id="winner-overlay" class="winner-overlay hidden">
-      <div class="winner-rays"></div>
-      <div class="winner-content">
-        <h3 class="winner-label">WINNER!</h3>
-        <div class="winner-name-bubble" id="winner-name-bubble">---</div>
-        <div class="winner-painting-wrap">
-          <img id="winner-painting-img" src="" alt="Winning painting" class="winner-painting-img">
-        </div>
-        <div class="winner-details">
-          <div class="winner-stat">
-            <span class="ws-label">Winning Bid</span>
-            <span id="winner-bid-display" class="ws-val gold">$0</span>
-          </div>
-          <div class="winner-stat">
-            <span class="ws-label">True Value</span>
-            <span id="winner-value-display" class="ws-val green">$???</span>
-          </div>
-          <div class="winner-stat">
-            <span class="ws-label">Painted by</span>
-            <span id="winner-artist-display" class="ws-val">---</span>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </section><!-- /page-6 -->
 
   <!-- ============================================================
-       PAGE 7: RESULTS — Final Leaderboard
+       PAGE 7: RESULTS — Final Leaderboard + All Paintings
        ============================================================ -->
   <section id="page-7" class="page hidden">
     <div class="results-stage">
+      <!-- Sunray background — stronger than before -->
+      <div class="results-rays"></div>
+
       <div class="results-header">
         <div class="trophy-icon">🏆</div>
         <h1 class="results-title">Final Results</h1>
-        <p class="results-sub">Balance + True Value of Won Paintings</p>
+        <p class="results-sub">Remaining Balance + True Value of Won Paintings</p>
       </div>
 
-      <ol id="leaderboard" class="leaderboard">
-        <!-- Populated by JS -->
-      </ol>
+      <!-- Leaderboard rows, each with player name + painting + scores -->
+      <ol id="leaderboard" class="leaderboard"></ol>
 
-      <button id="btn-play-again" class="btn btn-gold" onclick="location.reload()">
-        Play Again
-      </button>
+      <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
     </div>
   </section>
 
@@ -368,7 +341,7 @@
       <ol class="how-to-list">
         <li>One player <strong>creates</strong> a room and shares the code.</li>
         <li>Others <strong>join</strong> with that code.</li>
-        <li>Everyone gets the <strong>same prompt</strong> and has 60 seconds to draw it.</li>
+        <li>Everyone gets their <strong>own unique prompt</strong> — 60 seconds to draw it.</li>
         <li>Drawings go to the <strong>Auction Hall</strong> — anonymous, one at a time.</li>
         <li><strong>Blind bid</strong> on each painting. Highest bid wins.</li>
         <li>After all lots are sold, <strong>secret values</strong> are revealed.<br>
