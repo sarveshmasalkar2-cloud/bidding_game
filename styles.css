@@ -553,7 +553,7 @@ html, body {
   display: flex; flex-direction: column; align-items: center; gap: 24px;
 }
 
-/* Strong rotating sunrays — clearly visible on warm bg */
+/* Softer, layered motion background for results */
 .results-rays {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
@@ -596,3 +596,101 @@ html, body {
 .lb-painting { display: block; width: 60px; height: 46px; object-fit: cover; border-radius: 2px; image-rendering: pixelated; }
 .lb-painting-label, .lb-art-caption { font-size: 9px; color: var(--ink-4); text-align: center; margin-top: 2px; max-width: 64px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb-their-art { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+
+
+@media (max-width: 900px) {
+  .ornate-frame {
+    padding: 40px 45px;
+  }
+}
+
+@media (max-width: 760px) {
+  .studio-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .studio-timer-wrap,
+  .studio-balance {
+    flex: 0 0 auto;
+  }
+
+  .studio-prompt-pill {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.35;
+    padding: 8px 12px;
+    text-align: center;
+  }
+
+  .studio-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .studio-panel {
+    width: 100%;
+    border: none;
+    padding: 8px 10px;
+    overflow: visible;
+  }
+
+  .studio-left,
+  .studio-right {
+    border: none;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .studio-right {
+    border-top: 2px solid var(--border);
+    border-bottom: none;
+  }
+
+  .color-palette {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 6px;
+    max-width: 420px;
+  }
+
+  .brush-tools {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .brush-tool {
+    min-width: 72px;
+  }
+
+  .vertical-slider {
+    writing-mode: horizontal-tb;
+    direction: ltr;
+    width: min(280px, 80vw);
+    height: 4px;
+    margin: 8px auto;
+  }
+
+  .studio-center {
+    padding: 10px;
+  }
+
+  .ornate-frame {
+    padding: 34px 39px;
+    max-height: none;
+  }
+
+  .canvas-controls {
+    gap: 8px;
+    width: 100%;
+  }
+
+  .canvas-btn {
+    flex: 1;
+    min-width: 72px;
+  }
+}

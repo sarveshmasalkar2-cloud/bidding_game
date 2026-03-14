@@ -12,6 +12,22 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
+// Optional looped background music snippet:
+// Set MUSIC_FILE to your MP3 path (e.g. 'music/theme.mp3'). Leave as '' to disable.
+const MUSIC_FILE = '';
+let bgMusic = null;
+
+function startBackgroundMusic() {
+  if (!MUSIC_FILE || bgMusic) return;
+  bgMusic = new Audio(MUSIC_FILE);
+  bgMusic.loop = true;
+  bgMusic.volume = 0.5;
+  bgMusic.play().catch(() => {
+    // Autoplay may be blocked until user interaction.
+  });
+}
+
 // ================================================================
 // SECTION 2: DRAWING PROMPTS
 // ================================================================
@@ -185,6 +201,7 @@ btnEnter.addEventListener('click', () => {
   if (!state.nickname) return;
   // Remember nickname across sessions
   try { localStorage.setItem('mm_nickname', state.nickname); } catch(e) {}
+  startBackgroundMusic();
   generateAndShowCode();
   showPage('page-2');
 });
