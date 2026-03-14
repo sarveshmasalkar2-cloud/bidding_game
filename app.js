@@ -62,18 +62,18 @@ const PROMPTS = [
 // SECTION 3: COLOR PALETTE
 // ================================================================
 const COLORS = [
-  // Row 1: Reds & Oranges
-  '#e63946', '#f4722b', '#ff9f1c', '#f7c59f',
-  // Row 2: Yellows & Greens
-  '#ffdd00', '#9bc53d', '#2dc653', '#1db954',
-  // Row 3: Blues & Purples
-  '#0077b6', '#00b4d8', '#9b5de5', '#f15bb5',
-  // Row 4: Pastels
-  '#ffc8dd', '#ffafcc', '#bde0fe', '#cdb4db',
-  // Row 5: Neutrals
-  '#ffffff', '#d0cfc9', '#8d8d8d', '#4a4a4a',
-  // Row 6: Earth & Dark
-  '#8b4513', '#5c3317', '#1a1a2e', '#000000',
+  // Warm + soft reds/oranges
+  '#e87a7a', '#e99a6b', '#f3b07a', '#f7c59f', '#f5d6bf',
+  // Golden + greens
+  '#f1d27a', '#c9d87a', '#a6c98c', '#7fbe98', '#63b2a2',
+  // Teals + blues
+  '#6fbac2', '#7eaed8', '#8fa6de', '#a2a0dc', '#b4a1d1',
+  // Pinks + lavenders
+  '#d9a0c4', '#e5b3d1', '#edc4da', '#d8c8e9', '#c8d5ef',
+  // Neutrals + earth
+  '#ffffff', '#e9e3da', '#cdc4b8', '#a69d91', '#7f766a',
+  // Darker accents (still not too harsh)
+  '#6f8f76', '#6f7ea0', '#8a6f9b', '#9b6f7d', '#4a4a4a', '#2f2f36'
 ];
 
 // ================================================================
@@ -1289,19 +1289,13 @@ async function transitionToAuctionReveal(auctionIndex) {
   document.getElementById('auction-painting').src = drawing.image_data;
   document.getElementById('artist-name').textContent = 'Mystery Artist';
 
-  // Open curtains instantly after short image-load pause
-  setTimeout(() => {
-    curtainL.classList.add('open');
-    curtainR.classList.add('open');
-
-    // Host pushes bidding phase
-    if (state.isHost) {
-      db.from('rooms')
-        .update({ auction_phase: 'bidding' })
-        .eq('id', state.roomId)
-        .then(() => {});
-    }
-  }, 400);
+  // Keep curtains visible throughout bidding phase.
+  if (state.isHost) {
+    db.from('rooms')
+      .update({ auction_phase: 'bidding' })
+      .eq('id', state.roomId)
+      .then(() => {});
+  }
 }
 
 // ── Bidding Phase ─────────────────────────────────────────────────

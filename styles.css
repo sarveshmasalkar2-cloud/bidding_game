@@ -351,8 +351,8 @@ html, body {
 
 .color-palette { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; width: 100%; }
 .color-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.15s, border-color 0.15s; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
-.color-swatch:hover { transform: scale(1.2); }
-.color-swatch.active { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 1px rgba(0,0,0,0.15); transform: scale(1.2); }
+.color-swatch:hover { transform: scale(1.08); }
+.color-swatch.active { border-color: var(--ink-2); box-shadow: 0 0 0 1px var(--ink-2), inset 0 0 0 1px rgba(0,0,0,0.12); transform: scale(1.05); }
 
 .brush-preview-wrap { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--bg-card); border-radius: 50%; border: 2px solid var(--border); }
 .brush-preview { border-radius: 50%; background: var(--ink); transition: width 0.1s, height 0.1s; }
@@ -363,7 +363,7 @@ html, body {
 .brush-tool.active { background: var(--coral); border-color: var(--coral-dark); color: #fff; box-shadow: 0 2px 0 var(--coral-dark); }
 .brush-icon { font-size: 17px; }
 
-.studio-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; overflow: hidden; gap: 8px; background: var(--bg); }
+.studio-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; overflow: hidden; gap: 8px; background: var(--bg); }
 
 /*
   ORNATE FRAME
@@ -376,6 +376,7 @@ html, body {
   padding: 58px 64px;
   position: relative; display: inline-flex;
   align-items: center; justify-content: center;
+  width: min(100%, 1100px);
   max-width: 100%; max-height: calc(100% - 52px);
 }
 #drawing-canvas { display: block; cursor: crosshair; touch-action: none; image-rendering: pixelated; }
@@ -514,7 +515,7 @@ html, body {
   CURTAINS — no transition, appear/disappear instantly.
   ADJUST width % to change how much each curtain covers.
 */
-.curtain { position: absolute; top: 0; bottom: 0; width: 52%; background-size: 100% 100%; background-repeat: no-repeat; z-index: 10; }
+.curtain { position: absolute; top: 0; bottom: 0; width: 52%; background-size: 100% 100%; background-repeat: no-repeat; z-index: 10; transition: transform 1s ease-in-out; }
 .curtain-left  { left: 0;  background-image: url('curtain-left.png');  transform: translateX(0); }
 .curtain-left.open  { transform: translateX(-100%); }
 .curtain-right { right: 0; background-image: url('curtain-right.png'); transform: translateX(0); }
@@ -524,10 +525,10 @@ html, body {
 .auction-frame {
   background-image: url('frame.png');
   background-size: 100% 100%; background-repeat: no-repeat;
-  padding: 40px 46px; /* ADJUST for your frame.png */
+  padding: 56px 62px;
   display: inline-flex;
 }
-.auction-painting-img { display: block; width: clamp(140px,28vw,260px); height: clamp(110px,22vw,200px); object-fit: cover; image-rendering: pixelated; }
+.auction-painting-img { display: block; width: clamp(130px,24vw,220px); height: clamp(98px,18vw,165px); object-fit: cover; image-rendering: pixelated; }
 .artist-name { font-family: 'Playfair Display', serif; font-size: 13px; font-style: italic; color: var(--ink-3); }
 
 .auction-footer { background: var(--bg-card); border-top: 2px solid var(--border); padding: 14px 22px; position: relative; z-index: 10; flex-shrink: 0; }
@@ -592,7 +593,7 @@ html, body {
 .lb-score { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--green); white-space: nowrap; }
 
 .lb-won-paintings { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.lb-painting-frame { background-image: url('frame.png'); background-size: 100% 100%; padding: 7px 8px; flex-shrink: 0; display: inline-flex; flex-direction: column; align-items: center; }
+.lb-painting-frame { background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px; padding: 7px 8px; flex-shrink: 0; display: inline-flex; flex-direction: column; align-items: center; }
 .lb-painting { display: block; width: 60px; height: 46px; object-fit: cover; border-radius: 2px; image-rendering: pixelated; }
 .lb-painting-label, .lb-art-caption { font-size: 9px; color: var(--ink-4); text-align: center; margin-top: 2px; max-width: 64px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb-their-art { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
