@@ -6,8 +6,8 @@
 // ================================================================
 // SECTION 1: CONFIG — REPLACE THESE WITH YOUR SUPABASE CREDENTIALS
 // ================================================================
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';       // e.g. https://xxxxx.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // your project's anon key
+const SUPABASE_URL = 'https://xswgwxtqsuacohyvvqdl.supabase.co';       // e.g. https://xxxxx.supabase.co
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzd2d3eHRxc3VhY29oeXZ2cWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg3NTcsImV4cCI6MjA4OTA4NDc1N30.E6_nb6VKH73MDYHWqpdmUHXYF0_UIXRV5yF9FgpQQ5E'; // your project's anon key
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
