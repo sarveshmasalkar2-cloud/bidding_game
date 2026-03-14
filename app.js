@@ -386,6 +386,10 @@ async function refreshPlayerList() {
 }
 
 document.getElementById('btn-host-start').addEventListener('click', async () => {
+  if (!state.isHost) {
+    showToast('Only the host can begin the game.');
+    return;
+  }
   await hostStartGame();
 });
 
@@ -504,6 +508,8 @@ async function handleRoomUpdate(room) {
 
 // ── STEP 1: HOST STARTS GAME → assign unique prompt per player, push 'prompt' state ──
 async function hostStartGame() {
+  if (!state.isHost) return;
+
   // Fetch all players in the room
   const { data: players } = await db
     .from('players')
@@ -533,6 +539,8 @@ async function hostStartGame() {
 
 // ── STEP 2: HOST STARTS DRAWING PHASE after prompt countdown ─────
 async function hostStartDrawing() {
+  if (!state.isHost) return;
+
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'drawing' })
@@ -543,6 +551,8 @@ async function hostStartDrawing() {
 
 // ── STEP 3: HOST STARTS AUCTION after drawings are in ─────────────
 async function hostStartAuction() {
+  if (!state.isHost) return;
+
   // Fetch all drawings for this room
   const { data: drawings, error } = await db
     .from('drawings')
@@ -572,6 +582,8 @@ async function hostStartAuction() {
 
 // ── STEP 4: HOST ADVANCES to next auction lot ─────────────────────
 async function hostNextLot() {
+  if (!state.isHost) return;
+
   const room = state.currentRoom;
   const nextIndex = (room.current_auction_index || 0) + 1;
 
@@ -594,6 +606,8 @@ async function hostNextLot() {
 
 // ── STEP 5: HOST ENDS GAME → results ─────────────────────────────
 async function hostEndGame() {
+  if (!state.isHost) return;
+
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'results' })
@@ -604,6 +618,8 @@ async function hostEndGame() {
 
 // ── HOST: resolve bids for current lot, then advance ──────────────
 async function hostResolveBids(drawingId) {
+  if (!state.isHost) return;
+
   try {
     const { data: bids, error: bidsErr } = await db
       .from('bids')
@@ -725,13 +741,17 @@ function initCanvas() {
   canvas = document.getElementById('drawing-canvas');
   ctx    = canvas.getContext('2d');
 
-  // Compute canvas size from its container
-  const frame    = canvas.closest('.ornate-frame');
-  const maxW     = frame.clientWidth  - 108; // account for frame.png padding (54px each side)
-  const maxH     = frame.clientHeight - 96;  // account for frame.png padding (48px each side)
+  // Compute canvas size from its container and current frame padding
+  const frame = canvas.closest('.ornate-frame');
+  const frameStyle = getComputedStyle(frame);
+  const framePadX = (parseFloat(frameStyle.paddingLeft) || 0) + (parseFloat(frameStyle.paddingRight) || 0);
+  const framePadY = (parseFloat(frameStyle.paddingTop) || 0) + (parseFloat(frameStyle.paddingBottom) || 0);
+  const maxW = frame.clientWidth - framePadX;
+  const maxH = frame.clientHeight - framePadY;
+
   // Fall back to sensible defaults if the frame isn't sized yet
   const cw = Math.max(300, Math.min(maxW || 500, 600));
-  const ch = Math.round(cw * 0.75); // 4:3 ratio
+  const ch = Math.max(220, Math.min(Math.round(cw * 0.75), maxH || 450)); // 4:3 ratio
 
   canvas.width  = cw;
   canvas.height = ch;
@@ -1479,8 +1499,26 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
+
 // ================================================================
-// SECTION 19: INIT
+// SECTION 19: BACKGROUND MUSIC (OPTIONAL)
+// ================================================================
+function startLoopMusic() {
+  // Put your MP3 file path inside the quotes below.
+  const audio = new Audio('');
+  if (!audio.src) return;
+
+  audio.loop = true;
+  audio.volume = 0.35;
+  audio.play().catch(() => {
+    console.log('Music autoplay blocked until user interacts.');
+  });
+
+  return audio;
+}
+
+// ================================================================
+// SECTION 20: INIT
 // ================================================================
 (function init() {
   showPage('page-1');
@@ -1496,5 +1534,6 @@ window.addEventListener('beforeunload', () => {
   } catch(e) {}
 
   updateBrushPreview();
+  startLoopMusic();
   console.log('🎨 Masterpiece Market ready.');
 })();
