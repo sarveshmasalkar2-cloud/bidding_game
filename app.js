@@ -12,6 +12,22 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
+// Optional looped background music snippet:
+// Set MUSIC_FILE to your MP3 path (e.g. 'music/theme.mp3'). Leave as '' to disable.
+const MUSIC_FILE = '';
+let bgMusic = null;
+
+function startBackgroundMusic() {
+  if (!MUSIC_FILE || bgMusic) return;
+  bgMusic = new Audio(MUSIC_FILE);
+  bgMusic.loop = true;
+  bgMusic.volume = 0.5;
+  bgMusic.play().catch(() => {
+    // Autoplay may be blocked until user interaction.
+  });
+}
+
 // ================================================================
 // SECTION 2: DRAWING PROMPTS
 // ================================================================
@@ -185,6 +201,7 @@ btnEnter.addEventListener('click', () => {
   if (!state.nickname) return;
   // Remember nickname across sessions
   try { localStorage.setItem('mm_nickname', state.nickname); } catch(e) {}
+  startBackgroundMusic();
   generateAndShowCode();
   showPage('page-2');
 });
@@ -386,6 +403,10 @@ async function refreshPlayerList() {
 }
 
 document.getElementById('btn-host-start').addEventListener('click', async () => {
+  if (!state.isHost) {
+    showToast('Only the host can start the game.');
+    return;
+  }
   await hostStartGame();
 });
 
@@ -504,6 +525,7 @@ async function handleRoomUpdate(room) {
 
 // ── STEP 1: HOST STARTS GAME → assign unique prompt per player, push 'prompt' state ──
 async function hostStartGame() {
+  if (!state.isHost) return;
   // Fetch all players in the room
   const { data: players } = await db
     .from('players')
@@ -533,6 +555,7 @@ async function hostStartGame() {
 
 // ── STEP 2: HOST STARTS DRAWING PHASE after prompt countdown ─────
 async function hostStartDrawing() {
+  if (!state.isHost) return;
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'drawing' })
@@ -543,6 +566,7 @@ async function hostStartDrawing() {
 
 // ── STEP 3: HOST STARTS AUCTION after drawings are in ─────────────
 async function hostStartAuction() {
+  if (!state.isHost) return;
   // Fetch all drawings for this room
   const { data: drawings, error } = await db
     .from('drawings')
@@ -572,6 +596,7 @@ async function hostStartAuction() {
 
 // ── STEP 4: HOST ADVANCES to next auction lot ─────────────────────
 async function hostNextLot() {
+  if (!state.isHost) return;
   const room = state.currentRoom;
   const nextIndex = (room.current_auction_index || 0) + 1;
 
@@ -594,6 +619,7 @@ async function hostNextLot() {
 
 // ── STEP 5: HOST ENDS GAME → results ─────────────────────────────
 async function hostEndGame() {
+  if (!state.isHost) return;
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'results' })
@@ -604,6 +630,7 @@ async function hostEndGame() {
 
 // ── HOST: resolve bids for current lot, then advance ──────────────
 async function hostResolveBids(drawingId) {
+  if (!state.isHost) return;
   try {
     const { data: bids, error: bidsErr } = await db
       .from('bids')
@@ -727,10 +754,10 @@ function initCanvas() {
 
   // Compute canvas size from its container
   const frame    = canvas.closest('.ornate-frame');
-  const maxW     = frame.clientWidth  - 108; // account for frame.png padding (54px each side)
-  const maxH     = frame.clientHeight - 96;  // account for frame.png padding (48px each side)
+  const maxW     = frame.clientWidth  - 118; // 54px frame + 10px extra border each side
+  const maxH     = frame.clientHeight - 106; // 48px frame + 10px extra border each side
   // Fall back to sensible defaults if the frame isn't sized yet
-  const cw = Math.max(300, Math.min(maxW || 500, 600));
+  const cw = Math.max(220, Math.min(maxW || 500, 600));
   const ch = Math.round(cw * 0.75); // 4:3 ratio
 
   canvas.width  = cw;
