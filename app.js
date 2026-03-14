@@ -12,6 +12,22 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
+// Optional looped background music snippet:
+// Set MUSIC_FILE to your MP3 path (e.g. 'music/theme.mp3'). Leave as '' to disable.
+const MUSIC_FILE = '';
+let bgMusic = null;
+
+function startBackgroundMusic() {
+  if (!MUSIC_FILE || bgMusic) return;
+  bgMusic = new Audio(MUSIC_FILE);
+  bgMusic.loop = true;
+  bgMusic.volume = 0.5;
+  bgMusic.play().catch(() => {
+    // Autoplay may be blocked until user interaction.
+  });
+}
+
 // ================================================================
 // SECTION 2: DRAWING PROMPTS
 // ================================================================
@@ -46,18 +62,18 @@ const PROMPTS = [
 // SECTION 3: COLOR PALETTE
 // ================================================================
 const COLORS = [
-  // Row 1: Reds & Oranges
-  '#e63946', '#f4722b', '#ff9f1c', '#f7c59f',
-  // Row 2: Yellows & Greens
-  '#ffdd00', '#9bc53d', '#2dc653', '#1db954',
-  // Row 3: Blues & Purples
-  '#0077b6', '#00b4d8', '#9b5de5', '#f15bb5',
-  // Row 4: Pastels
-  '#ffc8dd', '#ffafcc', '#bde0fe', '#cdb4db',
-  // Row 5: Neutrals
-  '#ffffff', '#d0cfc9', '#8d8d8d', '#4a4a4a',
-  // Row 6: Earth & Dark
-  '#8b4513', '#5c3317', '#1a1a2e', '#000000',
+  // Warm + soft reds/oranges
+  '#e87a7a', '#e99a6b', '#f3b07a', '#f7c59f', '#f5d6bf',
+  // Golden + greens
+  '#f1d27a', '#c9d87a', '#a6c98c', '#7fbe98', '#63b2a2',
+  // Teals + blues
+  '#6fbac2', '#7eaed8', '#8fa6de', '#a2a0dc', '#b4a1d1',
+  // Pinks + lavenders
+  '#d9a0c4', '#e5b3d1', '#edc4da', '#d8c8e9', '#c8d5ef',
+  // Neutrals + earth
+  '#ffffff', '#e9e3da', '#cdc4b8', '#a69d91', '#7f766a',
+  // Darker accents (still not too harsh)
+  '#6f8f76', '#6f7ea0', '#8a6f9b', '#9b6f7d', '#4a4a4a', '#2f2f36'
 ];
 
 // ================================================================
@@ -185,6 +201,7 @@ btnEnter.addEventListener('click', () => {
   if (!state.nickname) return;
   // Remember nickname across sessions
   try { localStorage.setItem('mm_nickname', state.nickname); } catch(e) {}
+  startBackgroundMusic();
   generateAndShowCode();
   showPage('page-2');
 });
@@ -386,6 +403,10 @@ async function refreshPlayerList() {
 }
 
 document.getElementById('btn-host-start').addEventListener('click', async () => {
+  if (!state.isHost) {
+    showToast('Only the host can start the game.');
+    return;
+  }
   await hostStartGame();
 });
 
@@ -504,6 +525,7 @@ async function handleRoomUpdate(room) {
 
 // ── STEP 1: HOST STARTS GAME → assign unique prompt per player, push 'prompt' state ──
 async function hostStartGame() {
+  if (!state.isHost) return;
   // Fetch all players in the room
   const { data: players } = await db
     .from('players')
@@ -533,6 +555,7 @@ async function hostStartGame() {
 
 // ── STEP 2: HOST STARTS DRAWING PHASE after prompt countdown ─────
 async function hostStartDrawing() {
+  if (!state.isHost) return;
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'drawing' })
@@ -543,6 +566,7 @@ async function hostStartDrawing() {
 
 // ── STEP 3: HOST STARTS AUCTION after drawings are in ─────────────
 async function hostStartAuction() {
+  if (!state.isHost) return;
   // Fetch all drawings for this room
   const { data: drawings, error } = await db
     .from('drawings')
@@ -572,6 +596,7 @@ async function hostStartAuction() {
 
 // ── STEP 4: HOST ADVANCES to next auction lot ─────────────────────
 async function hostNextLot() {
+  if (!state.isHost) return;
   const room = state.currentRoom;
   const nextIndex = (room.current_auction_index || 0) + 1;
 
@@ -594,6 +619,7 @@ async function hostNextLot() {
 
 // ── STEP 5: HOST ENDS GAME → results ─────────────────────────────
 async function hostEndGame() {
+  if (!state.isHost) return;
   const { error } = await db
     .from('rooms')
     .update({ game_state: 'results' })
@@ -604,6 +630,7 @@ async function hostEndGame() {
 
 // ── HOST: resolve bids for current lot, then advance ──────────────
 async function hostResolveBids(drawingId) {
+  if (!state.isHost) return;
   try {
     const { data: bids, error: bidsErr } = await db
       .from('bids')
@@ -727,11 +754,13 @@ function initCanvas() {
 
   // Compute canvas size from its container
   const frame    = canvas.closest('.ornate-frame');
-  const maxW     = frame.clientWidth  - 108; // account for frame.png padding (54px each side)
-  const maxH     = frame.clientHeight - 96;  // account for frame.png padding (48px each side)
-  // Fall back to sensible defaults if the frame isn't sized yet
-  const cw = Math.max(300, Math.min(maxW || 500, 600));
-  const ch = Math.round(cw * 0.75); // 4:3 ratio
+  const maxW     = (frame?.clientWidth || window.innerWidth) - 12;
+  const maxH     = (frame?.clientHeight || window.innerHeight) - 12;
+
+  // Fill available screen space while preserving 4:3 ratio.
+  const widthByHeight = Math.round(maxH * (4 / 3));
+  const cw = Math.max(260, Math.min(maxW, widthByHeight));
+  const ch = Math.round(cw * 0.75);
 
   canvas.width  = cw;
   canvas.height = ch;
@@ -1252,19 +1281,13 @@ async function transitionToAuctionReveal(auctionIndex) {
   document.getElementById('auction-painting').src = drawing.image_data;
   document.getElementById('artist-name').textContent = 'Mystery Artist';
 
-  // Open curtains instantly after short image-load pause
-  setTimeout(() => {
-    curtainL.classList.add('open');
-    curtainR.classList.add('open');
-
-    // Host pushes bidding phase
-    if (state.isHost) {
-      db.from('rooms')
-        .update({ auction_phase: 'bidding' })
-        .eq('id', state.roomId)
-        .then(() => {});
-    }
-  }, 400);
+  // Keep curtains visible throughout bidding phase.
+  if (state.isHost) {
+    db.from('rooms')
+      .update({ auction_phase: 'bidding' })
+      .eq('id', state.roomId)
+      .then(() => {});
+  }
 }
 
 // ── Bidding Phase ─────────────────────────────────────────────────
